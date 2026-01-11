@@ -610,7 +610,7 @@ const Input = styled.input`
   background: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.text};
   font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
+  font-size: 16px;
   transition: border-color 0.2s ease;
 
   &:focus {
@@ -626,7 +626,7 @@ const Select = styled.select`
   background: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.text};
   font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
+  font-size: 16px;
   cursor: pointer;
   transition: border-color 0.2s ease;
 
@@ -643,7 +643,7 @@ const TextArea = styled.textarea`
   background: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.text};
   font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
+  font-size: 16px;
   resize: vertical;
   min-height: 80px;
   transition: border-color 0.2s ease;
