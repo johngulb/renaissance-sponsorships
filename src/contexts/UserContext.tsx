@@ -17,6 +17,68 @@ interface SDKUser {
   renaissanceUserId?: number | string;
 }
 
+// Helper to check if a user is valid (has Farcaster fid OR Renaissance account OR username)
+const isValidUser = (user: SDKUser | null | undefined): boolean => {
+  if (!user) return false;
+  const fid = typeof user.fid === 'string' ? parseInt(user.fid, 10) : user.fid;
+  // Valid if:
+  // - Has any non-zero fid (positive for Farcaster, negative for Renaissance-only)
+  // - Has renaissanceUserId (Renaissance backend user ID)
+  // - Has a username
+  return fid !== 0 || !!user.renaissanceUserId || !!user.username;
+};
+
+// Helper to try getting user from all possible SDK sources
+const tryGetSDKUser = async (): Promise<SDKUser | null> => {
+  if (typeof window === 'undefined') return null;
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const win = window as any;
+  
+  // Try window.farcaster.context
+  if (win.farcaster?.context) {
+    try {
+      const context = await Promise.resolve(win.farcaster.context);
+      if (context?.user && isValidUser(context.user)) {
+        console.log('🎯 Found user via window.farcaster.context');
+        return context.user;
+      }
+    } catch (e) {
+      console.log('⚠️ Error accessing farcaster.context:', e);
+    }
+  }
+  
+  // Try __renaissanceAuthContext
+  if (win.__renaissanceAuthContext?.user) {
+    const user = win.__renaissanceAuthContext.user;
+    if (isValidUser(user)) {
+      console.log('🎯 Found user via __renaissanceAuthContext');
+      return user;
+    }
+  }
+  
+  // Try getRenaissanceAuth()
+  if (typeof win.getRenaissanceAuth === 'function') {
+    try {
+      const context = win.getRenaissanceAuth();
+      if (context?.user && isValidUser(context.user)) {
+        console.log('🎯 Found user via getRenaissanceAuth()');
+        return context.user;
+      }
+    } catch (e) {
+      console.log('⚠️ Error calling getRenaissanceAuth:', e);
+    }
+  }
+  
+  // Try __FARCASTER_USER__
+  if (win.__FARCASTER_USER__ && isValidUser(win.__FARCASTER_USER__)) {
+    console.log('🎯 Found user via __FARCASTER_USER__');
+    return win.__FARCASTER_USER__;
+  }
+  
+  return null;
+};
+
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const USER_STORAGE_KEY = 'renaissance_app_user';
@@ -94,10 +156,50 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null;
+    let mounted = true;
+    
     const fetchUser = async () => {
       try {
         setIsLoading(true);
         setError(null);
+        
+        // Quick check using our helper first
+        const quickUser = await tryGetSDKUser();
+        if (quickUser && mounted) {
+          console.log('🚀 Quick user detection succeeded:', quickUser);
+          const authenticated = await authenticateFromSDK(quickUser);
+          if (authenticated) {
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Start polling for SDK context (context may load after page)
+        let pollAttempts = 0;
+        const maxPollAttempts = 20; // Poll for up to 10 seconds (500ms * 20)
+        
+        pollInterval = setInterval(async () => {
+          pollAttempts++;
+          console.log(`🔄 Polling for SDK user (attempt ${pollAttempts}/${maxPollAttempts})...`);
+          
+          const polledUser = await tryGetSDKUser();
+          if (polledUser && mounted) {
+            console.log('✅ Polling found user:', polledUser);
+            if (pollInterval) clearInterval(pollInterval);
+            const authenticated = await authenticateFromSDK(polledUser);
+            if (authenticated) {
+              setIsLoading(false);
+            }
+            return;
+          }
+          
+          if (pollAttempts >= maxPollAttempts) {
+            console.log('⏱️ Polling timed out, no user found');
+            if (pollInterval) clearInterval(pollInterval);
+            setIsLoading(false);
+          }
+        }, 500);
         
         if (typeof window !== 'undefined') {
           try {
@@ -124,9 +226,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         username: rawUser.username as string | undefined,
                         displayName: (rawUser.displayName || rawUser.display_name) as string | undefined,
                         pfpUrl: (rawUser.pfpUrl || rawUser.pfp_url) as string | undefined,
+                        renaissanceUserId: rawUser.renaissanceUserId as number | string | undefined,
                       };
                       
-                      if (normalizedUser.fid) {
+                      if (isValidUser(normalizedUser)) {
                         console.log('✅ Found user in SDK context:', normalizedUser);
                         const authenticated = await authenticateFromSDK(normalizedUser);
                         if (authenticated) {
@@ -146,6 +249,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const win = window as any;
+            
+            // Log all possible SDK locations for debugging
+            console.log('🔍 Checking for SDK on window:', {
+              hasFarcaster: !!win.farcaster,
+              hasRenaissanceAuthContext: !!win.__renaissanceAuthContext,
+              hasGetRenaissanceAuth: typeof win.getRenaissanceAuth === 'function',
+              hasFarcasterSDK: !!win.FarcasterSDK,
+              hasSDK: !!win.sdk,
+              hasEarlySDK: !!win.__FARCASTER_SDK__,
+              hasEarlyUser: !!win.__FARCASTER_USER__,
+            });
             
             // Check for SDK stored by early detection script
             if (win.__FARCASTER_USER__) {
@@ -170,13 +284,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Method 2: Use RPC - window.farcaster?.context
             if (win.farcaster && win.farcaster.context) {
               try {
+                console.log('🔍 Trying window.farcaster.context (RPC method)...');
                 const context = await win.farcaster.context;
-                const isAuth = context && context.user && (
-                  (typeof context.user.fid === 'number' && context.user.fid !== 0) ||
-                  context.user.renaissanceUserId ||
-                  context.user.username
-                );
-                if (isAuth) {
+                if (context && context.user && isValidUser(context.user)) {
                   console.log('✅ User found via window.farcaster.context:', context.user);
                   const authenticated = await authenticateFromSDK(context.user);
                   if (authenticated) {
@@ -192,13 +302,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Method 3: Check window.__renaissanceAuthContext
             if (win.__renaissanceAuthContext) {
               try {
+                console.log('🔍 Trying window.__renaissanceAuthContext...');
                 const context = win.__renaissanceAuthContext;
-                const isAuth = context && context.user && (
-                  (typeof context.user.fid === 'number' && context.user.fid !== 0) ||
-                  context.user.renaissanceUserId ||
-                  context.user.username
-                );
-                if (isAuth) {
+                if (context && context.user && isValidUser(context.user)) {
                   console.log('✅ User found via __renaissanceAuthContext:', context.user);
                   const authenticated = await authenticateFromSDK(context.user);
                   if (authenticated) {
@@ -214,13 +320,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Method 4: Check window.getRenaissanceAuth() function
             if (typeof win.getRenaissanceAuth === 'function') {
               try {
+                console.log('🔍 Trying window.getRenaissanceAuth()...');
                 const context = win.getRenaissanceAuth();
-                const isAuth = context && context.user && (
-                  (typeof context.user.fid === 'number' && context.user.fid !== 0) ||
-                  context.user.renaissanceUserId ||
-                  context.user.username
-                );
-                if (isAuth) {
+                if (context && context.user && isValidUser(context.user)) {
                   console.log('✅ User found via getRenaissanceAuth():', context.user);
                   const authenticated = await authenticateFromSDK(context.user);
                   if (authenticated) {
@@ -236,12 +338,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Listen for farcaster:context:ready event
             const contextReadyHandler = ((event: CustomEvent) => {
               console.log('📨 Received farcaster:context:ready event:', event.detail);
-              const isAuth = event.detail && event.detail.user && (
-                (typeof event.detail.user.fid === 'number' && event.detail.user.fid !== 0) ||
-                event.detail.user.renaissanceUserId ||
-                event.detail.user.username
-              );
-              if (isAuth) {
+              if (event.detail && event.detail.user && isValidUser(event.detail.user)) {
                 authenticateFromSDK(event.detail.user);
               }
             }) as EventListener;
@@ -345,6 +442,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     fetchUser();
+    
+    return () => {
+      mounted = false;
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, []);
 
   return (
