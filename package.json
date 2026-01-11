@@ -3,22 +3,35 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "@farcaster/miniapp-sdk": "^0.2.1",
+    "@libsql/client": "^0.15.15",
+    "drizzle-orm": "^0.45.1",
+    "next": "15.5.9",
+    "next-seo": "^6.6.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "styled-components": "^6.1.18",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
+    "drizzle-kit": "^0.31.8",
     "eslint": "^9",
-    "eslint-config-next": "16.1.1",
+    "eslint-config-next": "15.5.9",
     "typescript": "^5"
   }
 }
