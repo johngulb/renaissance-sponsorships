@@ -4,6 +4,18 @@ import styled from 'styled-components';
 import { useRouter } from 'next/router';
 import { useUser } from '@/contexts/UserContext';
 import { Loading } from '@/components/Loading';
+import {
+  Layout,
+  Card,
+  Stack,
+  FormGroup,
+  FormRow,
+  Label,
+  Input,
+  TextArea,
+  Select,
+  Button,
+} from '@/components/shared';
 
 interface SponsorProfile {
   id: string;
@@ -17,8 +29,6 @@ interface SponsorProfile {
   budgetRangeMax?: number;
   paymentMethod?: string;
 }
-
-const APP_NAME = 'Renaissance City';
 
 const INDUSTRIES = [
   'Restaurant',
@@ -136,7 +146,6 @@ const SponsorProfilePage: React.FC = () => {
       setProfile(savedProfile);
       setSuccess('Profile saved successfully!');
 
-      // Redirect to dashboard after short delay
       setTimeout(() => {
         router.push('/sponsor');
       }, 1500);
@@ -158,366 +167,214 @@ const SponsorProfilePage: React.FC = () => {
   const isEditing = !!profile;
 
   return (
-    <Container>
+    <Layout 
+      title={isEditing ? 'Edit Profile' : 'Create Profile'} 
+      showBack 
+      backHref="/dashboard"
+    >
       <Head>
-        <title>{isEditing ? 'Edit' : 'Create'} Sponsor Profile | {APP_NAME}</title>
+        <title>{isEditing ? 'Edit' : 'Create'} Sponsor Profile</title>
       </Head>
 
-      <Header>
-        <BackButton onClick={() => router.push('/sponsor')}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Back
-        </BackButton>
-        <HeaderTitle>{isEditing ? 'Edit' : 'Create'} Sponsor Profile</HeaderTitle>
-      </Header>
-
-      <Main>
-        <Form onSubmit={handleSubmit}>
-          <Section>
+      <Form onSubmit={handleSubmit}>
+        <Stack $gap="lg">
+          <Card>
             <SectionTitle>Business Information</SectionTitle>
-            
-            <FormGroup>
-              <Label htmlFor="name">Business Name *</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your business name"
-                required
-              />
-            </FormGroup>
+            <Stack $gap="md">
+              <FormGroup>
+                <Label htmlFor="name">Business Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your business name"
+                  required
+                />
+              </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="industry">Industry</Label>
-              <Select
-                id="industry"
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-              >
-                <option value="">Select an industry</option>
-                {INDUSTRIES.map((ind) => (
-                  <option key={ind} value={ind}>{ind}</option>
-                ))}
-              </Select>
-            </FormGroup>
+              <FormGroup>
+                <Label htmlFor="industry">Industry</Label>
+                <Select
+                  id="industry"
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                >
+                  <option value="">Select an industry</option>
+                  {INDUSTRIES.map((ind) => (
+                    <option key={ind} value={ind}>{ind}</option>
+                  ))}
+                </Select>
+              </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="description">Description</Label>
-              <TextArea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Tell creators about your business..."
-                rows={4}
-              />
-            </FormGroup>
+              <FormGroup>
+                <Label htmlFor="description">Description</Label>
+                <TextArea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Tell creators about your business..."
+                />
+              </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="City or neighborhood"
-              />
-            </FormGroup>
+              <FormRow>
+                <FormGroup>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="City or neighborhood"
+                  />
+                </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://your-business.com"
-              />
-            </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    placeholder="https://your-site.com"
+                  />
+                </FormGroup>
+              </FormRow>
 
-            <FormGroup>
-              <Label htmlFor="logoUrl">Logo URL</Label>
-              <Input
-                id="logoUrl"
-                type="url"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://example.com/logo.png"
-              />
-              {logoUrl && (
-                <LogoPreview>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logoUrl} alt="Logo preview" />
-                </LogoPreview>
-              )}
-            </FormGroup>
-          </Section>
+              <FormGroup>
+                <Label htmlFor="logoUrl">Logo URL</Label>
+                <Input
+                  id="logoUrl"
+                  type="url"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                />
+                {logoUrl && (
+                  <LogoPreview>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoUrl} alt="Logo preview" />
+                  </LogoPreview>
+                )}
+              </FormGroup>
+            </Stack>
+          </Card>
 
-          <Section>
+          <Card>
             <SectionTitle>Sponsorship Preferences</SectionTitle>
+            <Stack $gap="md">
+              <FormRow>
+                <FormGroup>
+                  <Label htmlFor="budgetMin">Budget Min ($)</Label>
+                  <Input
+                    id="budgetMin"
+                    type="number"
+                    value={budgetRangeMin}
+                    onChange={(e) => setBudgetRangeMin(e.target.value)}
+                    placeholder="0"
+                    min="0"
+                  />
+                </FormGroup>
 
-            <FormRow>
+                <FormGroup>
+                  <Label htmlFor="budgetMax">Budget Max ($)</Label>
+                  <Input
+                    id="budgetMax"
+                    type="number"
+                    value={budgetRangeMax}
+                    onChange={(e) => setBudgetRangeMax(e.target.value)}
+                    placeholder="10000"
+                    min="0"
+                  />
+                </FormGroup>
+              </FormRow>
+
               <FormGroup>
-                <Label htmlFor="budgetMin">Budget Range (Min)</Label>
-                <Input
-                  id="budgetMin"
-                  type="number"
-                  value={budgetRangeMin}
-                  onChange={(e) => setBudgetRangeMin(e.target.value)}
-                  placeholder="0"
-                  min="0"
-                />
+                <Label>Payment Method</Label>
+                <RadioGroup>
+                  <RadioOption $selected={paymentMethod === 'off-chain'}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="off-chain"
+                      checked={paymentMethod === 'off-chain'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <RadioContent>
+                      <RadioTitle>Traditional</RadioTitle>
+                      <RadioDesc>Bank transfer, check, etc.</RadioDesc>
+                    </RadioContent>
+                  </RadioOption>
+
+                  <RadioOption $selected={paymentMethod === 'wallet'}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="wallet"
+                      checked={paymentMethod === 'wallet'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <RadioContent>
+                      <RadioTitle>Crypto</RadioTitle>
+                      <RadioDesc>Blockchain payment</RadioDesc>
+                    </RadioContent>
+                  </RadioOption>
+
+                  <RadioOption $selected={paymentMethod === 'both'}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="both"
+                      checked={paymentMethod === 'both'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <RadioContent>
+                      <RadioTitle>Both</RadioTitle>
+                      <RadioDesc>Flexible options</RadioDesc>
+                    </RadioContent>
+                  </RadioOption>
+                </RadioGroup>
               </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="budgetMax">Budget Range (Max)</Label>
-                <Input
-                  id="budgetMax"
-                  type="number"
-                  value={budgetRangeMax}
-                  onChange={(e) => setBudgetRangeMax(e.target.value)}
-                  placeholder="10000"
-                  min="0"
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormGroup>
-              <Label>Payment Method</Label>
-              <RadioGroup>
-                <RadioOption>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="off-chain"
-                    checked={paymentMethod === 'off-chain'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <RadioLabel>
-                    <RadioTitle>Traditional Payment</RadioTitle>
-                    <RadioDescription>Bank transfer, check, etc.</RadioDescription>
-                  </RadioLabel>
-                </RadioOption>
-
-                <RadioOption>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="wallet"
-                    checked={paymentMethod === 'wallet'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <RadioLabel>
-                    <RadioTitle>Crypto Wallet</RadioTitle>
-                    <RadioDescription>Pay via blockchain</RadioDescription>
-                  </RadioLabel>
-                </RadioOption>
-
-                <RadioOption>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="both"
-                    checked={paymentMethod === 'both'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <RadioLabel>
-                    <RadioTitle>Both</RadioTitle>
-                    <RadioDescription>Flexible payment options</RadioDescription>
-                  </RadioLabel>
-                </RadioOption>
-              </RadioGroup>
-            </FormGroup>
-          </Section>
+            </Stack>
+          </Card>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
           {success && <SuccessMessage>{success}</SuccessMessage>}
 
           <Actions>
-            <CancelButton type="button" onClick={() => router.push('/sponsor')}>
+            <Button type="button" $variant="secondary" onClick={() => router.push('/dashboard')}>
               Cancel
-            </CancelButton>
-            <SubmitButton type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving...' : isEditing ? 'Update Profile' : 'Create Profile'}
-            </SubmitButton>
+            </Button>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            </Button>
           </Actions>
-        </Form>
-      </Main>
-    </Container>
+        </Stack>
+      </Form>
+    </Layout>
   );
 };
 
-const Container = styled.div`
-  min-height: 100vh;
-  background: ${({ theme }) => theme.background};
-`;
-
-const Header = styled.header`
-  background: ${({ theme }) => theme.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.border};
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  border: none;
-  background: none;
-  color: ${({ theme }) => theme.textSecondary};
-  cursor: pointer;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  &:hover {
-    color: ${({ theme }) => theme.text};
-  }
-`;
-
-const HeaderTitle = styled.h1`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text};
-  margin: 0;
-`;
-
-const Main = styled.main`
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-`;
-
-const Section = styled.div`
-  background: ${({ theme }) => theme.surface};
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
-  padding: 1.5rem;
-`;
+const Form = styled.form``;
 
 const SectionTitle = styled.h2`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.1rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: ${({ theme }) => theme.text};
-  margin: 0 0 1.25rem;
-  padding-bottom: 0.75rem;
+  color: ${({ theme }) => theme.textSecondary};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 ${({ theme }) => theme.spacing.md};
+  padding-bottom: ${({ theme }) => theme.spacing.sm};
   border-bottom: 1px solid ${({ theme }) => theme.border};
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Label = styled.label`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text};
-`;
-
-const Input = styled.input`
-  padding: 0.75rem 1rem;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 8px;
-  background: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 16px;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.accent};
-  }
-
-  &::placeholder {
-    color: ${({ theme }) => theme.textSecondary};
-    opacity: 0.7;
-  }
-`;
-
-const Select = styled.select`
-  padding: 0.75rem 1rem;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 8px;
-  background: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 16px;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.accent};
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 0.75rem 1rem;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 8px;
-  background: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 16px;
-  resize: vertical;
-  min-height: 100px;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.accent};
-  }
-
-  &::placeholder {
-    color: ${({ theme }) => theme.textSecondary};
-    opacity: 0.7;
-  }
 `;
 
 const LogoPreview = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
+  width: 64px;
+  height: 64px;
+  border-radius: ${({ theme }) => theme.radius.md};
   overflow: hidden;
   border: 1px solid ${({ theme }) => theme.border};
-  margin-top: 0.5rem;
+  margin-top: ${({ theme }) => theme.spacing.xs};
 
   img {
     width: 100%;
@@ -527,113 +384,69 @@ const LogoPreview = styled.div`
 `;
 
 const RadioGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing.sm};
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const RadioOption = styled.label`
+const RadioOption = styled.label<{ $selected?: boolean }>`
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 8px;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm};
+  border: 1px solid ${({ theme, $selected }) => $selected ? theme.accent : theme.border};
+  border-radius: ${({ theme }) => theme.radius.md};
   cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:has(input:checked) {
-    border-color: ${({ theme }) => theme.accent};
-    background: ${({ theme }) => theme.accent}10;
-  }
+  background: ${({ theme, $selected }) => $selected ? `${theme.accent}08` : 'transparent'};
+  transition: all 0.15s ease;
 
   input {
-    margin-top: 0.25rem;
+    margin-top: 2px;
+    accent-color: ${({ theme }) => theme.accent};
   }
 `;
 
-const RadioLabel = styled.div`
+const RadioContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 2px;
 `;
 
 const RadioTitle = styled.span`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: ${({ theme }) => theme.text};
 `;
 
-const RadioDescription = styled.span`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.8rem;
-  color: ${({ theme }) => theme.textSecondary};
+const RadioDesc = styled.span`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.textMuted};
 `;
 
-const ErrorMessage = styled.p`
-  color: #C62828;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-  margin: 0;
-  padding: 0.75rem 1rem;
-  background: rgba(198, 40, 40, 0.1);
-  border-radius: 8px;
+const ErrorMessage = styled.div`
+  padding: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.errorBg};
+  color: ${({ theme }) => theme.error};
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 0.875rem;
 `;
 
-const SuccessMessage = styled.p`
-  color: #2E7D32;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-  margin: 0;
-  padding: 0.75rem 1rem;
-  background: rgba(46, 125, 50, 0.1);
-  border-radius: 8px;
+const SuccessMessage = styled.div`
+  padding: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.successBg};
+  color: ${({ theme }) => theme.success};
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 0.875rem;
 `;
 
 const Actions = styled.div`
   display: flex;
-  gap: 0.75rem;
+  gap: ${({ theme }) => theme.spacing.sm};
   justify-content: flex-end;
-`;
-
-const CancelButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 8px;
-  background: transparent;
-  color: ${({ theme }) => theme.textSecondary};
-  cursor: pointer;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.backgroundAlt};
-  }
-`;
-
-const SubmitButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, ${({ theme }) => theme.accent}, ${({ theme }) => theme.accentGold});
-  color: #fff;
-  cursor: pointer;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${({ theme }) => theme.shadow};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
 `;
 
 export default SponsorProfilePage;

@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useUser } from "@/contexts/UserContext";
 import { Loading } from "@/components/Loading";
-import { RoleSelector } from "@/components/shared";
-
-// App configuration
-const APP_NAME = "Renaissance City";
+import {
+  Card,
+  Stack,
+  Row,
+  Badge,
+  Text,
+  Heading,
+  Spacer,
+  Avatar,
+  Section,
+  SectionHeader,
+  SectionTitle,
+  EmptyState,
+  EmptyStateTitle,
+  EmptyStateText,
+} from "@/components/shared";
 
 interface SponsorProfile {
   id: string;
@@ -110,178 +122,149 @@ const DashboardPage: React.FC = () => {
   return (
     <Container>
       <Head>
-        <title>Dashboard | {APP_NAME}</title>
-        <meta name="description" content={`Your ${APP_NAME} dashboard`} />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Dashboard | Sponsorships</title>
+        <meta name="description" content="Manage your sponsorships" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
+      <Header>
+        <HeaderContent>
+          <Logo>Sponsorships</Logo>
+        </HeaderContent>
+      </Header>
+
       <Main>
-        <DashboardHeader>
-          <UserSection>
-            <ProfileImageContainer>
+        <UserCard>
+          <Row $gap="md">
+            <Avatar $size="lg">
               {user.pfpUrl && !imageError ? (
-                <ProfileImage
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
                   src={user.pfpUrl}
                   alt={displayName}
                   onError={() => setImageError(true)}
                 />
               ) : (
-                <DefaultAvatar>{initials}</DefaultAvatar>
+                initials
               )}
-            </ProfileImageContainer>
-            <WelcomeText>
-              <Greeting>Welcome, {displayName}</Greeting>
-              <SubGreeting>Sponsor Management Platform</SubGreeting>
-            </WelcomeText>
-          </UserSection>
-          <BrandMark>
-            <BrandName>Renaissance City</BrandName>
-          </BrandMark>
-        </DashboardHeader>
+            </Avatar>
+            <Stack $gap="xs">
+              <Heading $size="md">{displayName}</Heading>
+              <Text $size="sm" $color="secondary">
+                {hasSponsorProfile && hasCreatorProfile
+                  ? 'Sponsor & Creator'
+                  : hasSponsorProfile
+                  ? 'Sponsor'
+                  : hasCreatorProfile
+                  ? 'Creator'
+                  : 'New User'}
+              </Text>
+            </Stack>
+          </Row>
+        </UserCard>
 
-        <ContentSection>
-          {hasAnyProfile ? (
-            <>
-              <SectionTitle>Your Profiles</SectionTitle>
-              <Divider />
+        <Spacer $size="xl" />
+
+        {hasAnyProfile ? (
+          <>
+            <Section>
+              <SectionHeader>
+                <SectionTitle>Your Profiles</SectionTitle>
+              </SectionHeader>
               
-              <RoleSelectorWrapper>
-                <RoleSelector
-                  hasSponsorProfile={hasSponsorProfile}
-                  hasCreatorProfile={hasCreatorProfile}
-                />
-              </RoleSelectorWrapper>
-
-              <ProfileCards>
+              <Stack $gap="sm">
                 {hasSponsorProfile && (
                   <ProfileCard onClick={() => router.push('/sponsor')}>
-                    <ProfileCardIcon $variant="sponsor">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
-                      </svg>
-                    </ProfileCardIcon>
-                    <ProfileCardContent>
-                      <ProfileCardTitle>{sponsorProfile?.name}</ProfileCardTitle>
-                      <ProfileCardLabel>Sponsor Profile</ProfileCardLabel>
-                    </ProfileCardContent>
-                    <ProfileCardArrow>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </ProfileCardArrow>
+                    <ProfileIcon $variant="sponsor">
+                      <BuildingIcon />
+                    </ProfileIcon>
+                    <ProfileInfo>
+                      <ProfileName>{sponsorProfile?.name}</ProfileName>
+                      <ProfileType>Sponsor</ProfileType>
+                    </ProfileInfo>
+                    <Badge $variant="success">Active</Badge>
+                    <ChevronIcon />
                   </ProfileCard>
                 )}
 
                 {hasCreatorProfile && (
                   <ProfileCard onClick={() => router.push('/creator')}>
-                    <ProfileCardIcon $variant="creator">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
-                    </ProfileCardIcon>
-                    <ProfileCardContent>
-                      <ProfileCardTitle>{creatorProfile?.displayName}</ProfileCardTitle>
-                      <ProfileCardLabel>Creator Profile</ProfileCardLabel>
-                    </ProfileCardContent>
-                    <ProfileCardArrow>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </ProfileCardArrow>
+                    <ProfileIcon $variant="creator">
+                      <StarIcon />
+                    </ProfileIcon>
+                    <ProfileInfo>
+                      <ProfileName>{creatorProfile?.displayName}</ProfileName>
+                      <ProfileType>Creator</ProfileType>
+                    </ProfileInfo>
+                    <Badge $variant="success">Active</Badge>
+                    <ChevronIcon />
                   </ProfileCard>
                 )}
-              </ProfileCards>
+              </Stack>
+            </Section>
 
-              {(!hasSponsorProfile || !hasCreatorProfile) && (
-                <AddProfileSection>
-                  <AddProfileTitle>Add Another Profile</AddProfileTitle>
+            {(!hasSponsorProfile || !hasCreatorProfile) && (
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Add Profile</SectionTitle>
+                </SectionHeader>
+                
+                <Stack $gap="sm">
                   {!hasSponsorProfile && (
-                    <AddProfileButton onClick={() => router.push('/sponsor/profile')}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      Create Sponsor Profile
-                    </AddProfileButton>
+                    <AddButton onClick={() => router.push('/sponsor/profile')}>
+                      <PlusIcon />
+                      <span>Create Sponsor Profile</span>
+                    </AddButton>
                   )}
                   {!hasCreatorProfile && (
-                    <AddProfileButton onClick={() => router.push('/creator/profile')}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      Create Creator Profile
-                    </AddProfileButton>
+                    <AddButton onClick={() => router.push('/creator/profile')}>
+                      <PlusIcon />
+                      <span>Create Creator Profile</span>
+                    </AddButton>
                   )}
-                </AddProfileSection>
-              )}
-            </>
-          ) : (
-            <>
-              <OnboardingTitle>Get Started</OnboardingTitle>
-              <Divider />
-              <OnboardingText>
-                Choose how you want to participate in the local sponsorship ecosystem.
-                You can create both profiles to act as a sponsor and a creator.
-              </OnboardingText>
+                </Stack>
+              </Section>
+            )}
+          </>
+        ) : (
+          <EmptyState>
+            <WelcomeIcon />
+            <EmptyStateTitle>Welcome to Sponsorships</EmptyStateTitle>
+            <EmptyStateText>
+              Get started by creating a profile. You can act as a sponsor, a creator, or both.
+            </EmptyStateText>
+            
+            <Stack $gap="sm" style={{ width: '100%', maxWidth: '320px' }}>
+              <RoleCard onClick={() => router.push('/sponsor/profile')}>
+                <RoleIcon $variant="sponsor">
+                  <BuildingIcon />
+                </RoleIcon>
+                <RoleContent>
+                  <RoleName>Sponsor</RoleName>
+                  <RoleDesc>Create campaigns & support creators</RoleDesc>
+                </RoleContent>
+                <ChevronIcon />
+              </RoleCard>
 
-              <OnboardingCards>
-                <OnboardingCard onClick={() => router.push('/sponsor/profile')}>
-                  <OnboardingCardIcon $variant="sponsor">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
-                    </svg>
-                  </OnboardingCardIcon>
-                  <OnboardingCardTitle>I&apos;m a Sponsor</OnboardingCardTitle>
-                  <OnboardingCardDescription>
-                    Create campaigns, connect with creators, and support your local creative community
-                  </OnboardingCardDescription>
-                  <OnboardingCardButton>
-                    Create Sponsor Profile
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </OnboardingCardButton>
-                </OnboardingCard>
-
-                <OnboardingCard onClick={() => router.push('/creator/profile')}>
-                  <OnboardingCardIcon $variant="creator">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  </OnboardingCardIcon>
-                  <OnboardingCardTitle>I&apos;m a Creator</OnboardingCardTitle>
-                  <OnboardingCardDescription>
-                    Define your offerings, receive sponsorships, and grow your creative practice
-                  </OnboardingCardDescription>
-                  <OnboardingCardButton>
-                    Create Creator Profile
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </OnboardingCardButton>
-                </OnboardingCard>
-              </OnboardingCards>
-            </>
-          )}
-        </ContentSection>
+              <RoleCard onClick={() => router.push('/creator/profile')}>
+                <RoleIcon $variant="creator">
+                  <StarIcon />
+                </RoleIcon>
+                <RoleContent>
+                  <RoleName>Creator</RoleName>
+                  <RoleDesc>Offer services & receive sponsorships</RoleDesc>
+                </RoleContent>
+                <ChevronIcon />
+              </RoleCard>
+            </Stack>
+          </EmptyState>
+        )}
       </Main>
     </Container>
   );
 };
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
+// Styled Components
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
@@ -289,270 +272,99 @@ const Container = styled.div`
   background: ${({ theme }) => theme.background};
 `;
 
-const Main = styled.main`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-const DashboardHeader = styled.div`
-  width: 100%;
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+const Header = styled.header`
   background: ${({ theme }) => theme.surface};
   border-bottom: 1px solid ${({ theme }) => theme.border};
-  box-shadow: 0 2px 8px ${({ theme }) => theme.shadow};
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
 `;
 
-const UserSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  animation: ${fadeIn} 0.5s ease-out;
+const HeaderContent = styled.div`
+  max-width: 600px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
 `;
 
-const ProfileImageContainer = styled.div`
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid ${({ theme }) => theme.accentGold};
-  background: ${({ theme }) => theme.surface};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px ${({ theme }) => theme.shadow};
-`;
-
-const ProfileImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const DefaultAvatar = styled.div`
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.accent} 0%,
-    ${({ theme }) => theme.accentGold} 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2rem;
+const Logo = styled.h1`
+  font-size: 1.125rem;
   font-weight: 600;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-`;
-
-const WelcomeText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-`;
-
-const Greeting = styled.h1`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
   color: ${({ theme }) => theme.text};
-  
-  @media (max-width: 768px) {
-    font-size: 1.25rem;
-  }
-`;
-
-const SubGreeting = styled.p`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.textSecondary};
   margin: 0;
-  font-style: italic;
 `;
 
-const BrandMark = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  animation: ${fadeIn} 0.5s ease-out 0.2s both;
-`;
-
-const BrandName = styled.span`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.accent};
-  letter-spacing: 0.05em;
-  
-  @media (max-width: 480px) {
-    display: none;
-  }
-`;
-
-const ContentSection = styled.section`
+const Main = styled.main`
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3rem 2rem;
-  text-align: center;
-  animation: ${fadeIn} 0.6s ease-out 0.3s both;
-  max-width: 900px;
+  max-width: 600px;
   margin: 0 auto;
   width: 100%;
+  padding: ${({ theme }) => theme.spacing.lg};
 `;
 
-const SectionTitle = styled.h2`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text};
-  margin: 0;
-`;
-
-const Divider = styled.div`
-  width: 60px;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    ${({ theme }) => theme.accentGold},
-    transparent
-  );
-  margin: 1.5rem 0;
-`;
-
-const RoleSelectorWrapper = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const ProfileCards = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  max-width: 480px;
+const UserCard = styled(Card)`
+  background: ${({ theme }) => theme.surface};
 `;
 
 const ProfileCard = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
+  border-radius: ${({ theme }) => theme.radius.lg};
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${({ theme }) => theme.accent};
-    box-shadow: 0 4px 16px ${({ theme }) => theme.shadow};
-    transform: translateY(-2px);
+    background: ${({ theme }) => theme.surfaceHover};
+    border-color: ${({ theme }) => theme.textMuted};
   }
 `;
 
-const ProfileCardIcon = styled.div<{ $variant: 'sponsor' | 'creator' }>`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+const ProfileIcon = styled.div<{ $variant: 'sponsor' | 'creator' }>`
+  width: 40px;
+  height: 40px;
+  border-radius: ${({ theme }) => theme.radius.md};
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  
-  background: ${({ $variant }) =>
-    $variant === 'sponsor'
-      ? 'rgba(158, 59, 29, 0.15)'
-      : 'rgba(184, 134, 11, 0.15)'};
-  
+  background: ${({ $variant, theme }) =>
+    $variant === 'sponsor' ? `${theme.accent}15` : `${theme.accentGold}15`};
   color: ${({ $variant, theme }) =>
     $variant === 'sponsor' ? theme.accent : theme.accentGold};
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
 `;
 
-const ProfileCardContent = styled.div`
+const ProfileInfo = styled.div`
   flex: 1;
+  min-width: 0;
 `;
 
-const ProfileCardTitle = styled.h3`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.15rem;
-  font-weight: 600;
+const ProfileName = styled.div`
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: ${({ theme }) => theme.text};
-  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-const ProfileCardLabel = styled.span`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.85rem;
-  color: ${({ theme }) => theme.textSecondary};
+const ProfileType = styled.div`
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.textMuted};
 `;
 
-const ProfileCardArrow = styled.div`
-  color: ${({ theme }) => theme.textSecondary};
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-const AddProfileSection = styled.div`
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid ${({ theme }) => theme.border};
-  width: 100%;
-  max-width: 480px;
-`;
-
-const AddProfileTitle = styled.h3`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.textSecondary};
-  margin: 0 0 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const AddProfileButton = styled.button`
+const AddButton = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.md};
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px dashed ${({ theme }) => theme.border};
-  border-radius: 8px;
   background: transparent;
+  border: 1px dashed ${({ theme }) => theme.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
   color: ${({ theme }) => theme.textSecondary};
+  font-size: 0.875rem;
   cursor: pointer;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  margin-bottom: 0.75rem;
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+  transition: all 0.15s ease;
 
   &:hover {
     border-color: ${({ theme }) => theme.accent};
@@ -560,102 +372,85 @@ const AddProfileButton = styled.button`
   }
 `;
 
-const OnboardingTitle = styled.h2`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text};
-  margin: 0;
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const OnboardingText = styled.p`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 1.1rem;
-  color: ${({ theme }) => theme.textSecondary};
-  max-width: 520px;
-  line-height: 1.7;
-  margin: 0 0 2rem;
-`;
-
-const OnboardingCards = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  width: 100%;
-`;
-
-const OnboardingCard = styled.div`
+const RoleCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 16px;
-  padding: 2rem;
+  border-radius: ${({ theme }) => theme.radius.lg};
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${({ theme }) => theme.accent};
-    box-shadow: 0 8px 24px ${({ theme }) => theme.shadow};
-    transform: translateY(-4px);
+    background: ${({ theme }) => theme.surfaceHover};
+    border-color: ${({ theme }) => theme.textMuted};
   }
 `;
 
-const OnboardingCardIcon = styled.div<{ $variant: 'sponsor' | 'creator' }>`
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
+const RoleIcon = styled.div<{ $variant: 'sponsor' | 'creator' }>`
+  width: 44px;
+  height: 44px;
+  border-radius: ${({ theme }) => theme.radius.md};
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1.25rem;
-  
-  background: ${({ $variant }) =>
-    $variant === 'sponsor'
-      ? 'linear-gradient(135deg, rgba(158, 59, 29, 0.2), rgba(184, 134, 11, 0.2))'
-      : 'linear-gradient(135deg, rgba(184, 134, 11, 0.2), rgba(158, 59, 29, 0.2))'};
-  
+  flex-shrink: 0;
+  background: ${({ $variant, theme }) =>
+    $variant === 'sponsor' ? `${theme.accent}15` : `${theme.accentGold}15`};
   color: ${({ $variant, theme }) =>
     $variant === 'sponsor' ? theme.accent : theme.accentGold};
-
-  svg {
-    width: 32px;
-    height: 32px;
-  }
 `;
 
-const OnboardingCardTitle = styled.h3`
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text};
-  margin: 0 0 0.75rem;
+const RoleContent = styled.div`
+  flex: 1;
 `;
 
-const OnboardingCardDescription = styled.p`
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
-  color: ${({ theme }) => theme.textSecondary};
-  line-height: 1.6;
-  margin: 0 0 1.5rem;
-`;
-
-const OnboardingCardButton = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 0.95rem;
+const RoleName = styled.div`
+  font-size: 0.9375rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.accent};
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+  color: ${({ theme }) => theme.text};
 `;
+
+const RoleDesc = styled.div`
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.textMuted};
+`;
+
+// Icons
+const BuildingIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
+  </svg>
+);
+
+const StarIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
+
+const ChevronIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const WelcomeIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3 }}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
 
 export default DashboardPage;
